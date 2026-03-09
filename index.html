@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Ramadan Tracker 🌙</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#050810;--s1:#0A0F1E;--s2:#111827;--s3:#1F2937;
+  --gold:#F5C518;--gd:rgba(245,197,24,0.12);
+  --teal:#00D4AA;--td:rgba(0,212,170,0.12);
+  --red:#FF4560;--green:#00D97E;--amber:#FFB800;
+  --text:#E8EAF0;--muted:#6B7280;--dim:#374151;
+  --r:14px;--font:'Inter',sans-serif;
+  --nh:56px;--hh:72px;--pb:40px;--nav:64px;
+}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);display:flex;flex-direction:column;}
+
+/* === ONBOARDING === */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:900;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);}
+.overlay.hidden{display:none;}
+.sheet{background:var(--s1);border-radius:24px 24px 0 0;padding:32px 24px calc(48px + env(safe-area-inset-bottom,0px));width:100%;max-width:520px;border-top:1px solid rgba(255,255,255,0.08);}
+.handle{width:40px;height:4px;background:var(--dim);border-radius:4px;margin:0 auto 28px;}
+.ob-title{font-size:22px;font-weight:800;margin-bottom:6px;}
+.ob-sub{font-size:14px;color:var(--muted);margin-bottom:22px;line-height:1.5;}
+.step{display:none;}.step.active{display:block;}
+.avatar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:18px;}
+.av-btn{background:var(--s2);border:2px solid transparent;border-radius:10px;padding:8px;font-size:22px;cursor:pointer;text-align:center;transition:all 0.15s;}
+.av-btn.sel{border-color:var(--gold);background:var(--gd);}
+.inp{width:100%;background:var(--s2);border:1.5px solid var(--dim);border-radius:12px;padding:14px 16px;font-size:16px;color:var(--text);font-family:var(--font);outline:none;transition:border-color 0.2s;margin-bottom:4px;}
+.inp:focus{border-color:var(--gold);}
+.inp.code{text-transform:uppercase;letter-spacing:5px;font-weight:800;font-size:22px;text-align:center;}
+.btn{width:100%;padding:15px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font);border:none;transition:all 0.2s;margin-top:10px;}
+.btn-gold{background:var(--gold);color:#000;}
+.btn-gold:hover{filter:brightness(1.08);}
+.btn-out{background:transparent;border:1.5px solid var(--dim);color:var(--text);}
+.fam-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.fam-actions .btn{margin-top:0;}
+.hint{font-size:11px;color:var(--muted);text-align:center;margin-top:8px;line-height:1.5;}
+.inp-label{font-size:11px;color:var(--muted);margin-bottom:8px;margin-top:14px;letter-spacing:0.5px;}
+
+/* === HEADER === */
+.header{height:var(--nh);display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:rgba(5,8,16,0.98);border-bottom:1px solid rgba(255,255,255,0.06);position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:blur(12px);}
+.logo{font-size:15px;font-weight:800;letter-spacing:2px;color:var(--gold);}
+.logo-sub{color:rgba(232,234,240,0.4);font-weight:400;font-size:13px;margin-left:4px;}
+.header-r{display:flex;align-items:center;gap:10px;}
+.clock{font-size:11px;color:var(--muted);font-family:'Courier New',monospace;letter-spacing:1px;}
+.upill{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--dim);border-radius:50px;padding:5px 12px 5px 8px;cursor:pointer;font-size:12px;font-weight:600;transition:border-color 0.2s;}
+.upill:hover{border-color:var(--gold);}
+.upill-av{font-size:16px;}
+.upill-nm{color:var(--text);}
+.fbadge{font-size:9px;background:var(--gd);border:1px solid rgba(245,197,24,0.3);color:var(--gold);border-radius:4px;padding:1px 5px;letter-spacing:1px;font-weight:700;margin-left:2px;}
+
+/* === HERO STRIP === */
+.hero{height:var(--hh);display:grid;grid-template-columns:repeat(4,1fr);background:var(--s1);border-bottom:1px solid rgba(255,255,255,0.05);position:fixed;top:var(--nh);left:0;right:0;z-index:99;}
+.hi{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 4px;border-right:1px solid rgba(255,255,255,0.05);}
+.hi:last-child{border-right:none;}
+.hl{font-size:7px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:2px;}
+.hv{font-size:20px;font-weight:900;color:var(--gold);}
+.hv.t{color:var(--teal);}
+.hs{font-size:8px;color:var(--muted);margin-top:1px;}
+
+/* === PRAYER BAR === */
+.pbar{display:flex;justify-content:space-around;background:rgba(5,8,16,0.95);border-bottom:1px solid rgba(255,255,255,0.04);padding:7px 12px;position:fixed;top:calc(var(--nh) + var(--hh));left:0;right:0;z-index:98;}
+.pi{text-align:center;}
+.pn{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;}
+.pt{font-size:12px;font-weight:700;color:var(--text);}
+.pi.past .pt{color:var(--dim);text-decoration:line-through;}
+.pi.nxt .pn,.pi.nxt .pt{color:var(--gold);}
+.pnxt{font-size:7px;color:var(--gold);letter-spacing:1px;font-weight:700;}
+
+/* === CONTENT === */
+.content{margin-top:calc(var(--nh) + var(--hh) + var(--pb));margin-bottom:var(--nav);overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;}
+.ci{padding:16px;display:flex;flex-direction:column;gap:14px;max-width:580px;margin:0 auto;}
+
+/* === BOTTOM NAV === */
+.bnav{height:var(--nav);display:flex;align-items:stretch;background:rgba(5,8,16,0.98);border-top:1px solid rgba(255,255,255,0.08);position:fixed;bottom:0;left:0;right:0;z-index:100;backdrop-filter:blur(12px);padding-bottom:env(safe-area-inset-bottom,0px);}
+.ntab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border:none;background:none;font-family:var(--font);transition:all 0.15s;}
+.nicon{font-size:22px;transition:transform 0.15s;}
+.nlbl{font-size:9px;font-weight:600;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;}
+.ntab.on .nlbl{color:var(--gold);}
+.ntab.on .nicon{transform:scale(1.12);}
+
+/* === TAB PANELS === */
+.tab{display:none;flex-direction:column;gap:14px;}
+.tab.on{display:flex;}
+
+/* === SECTION === */
+.sec{font-size:9px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.sec::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.05);}
+
+/* === CARD === */
+.card{background:var(--s1);border:1px solid rgba(255,255,255,0.07);border-radius:var(--r);padding:18px;}
+
+/* === MY DAY TRACKER === */
+.tr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.tr-name{font-size:20px;font-weight:800;}
+.tr-pts-val{font-size:28px;font-weight:900;color:var(--gold);text-align:right;}
+.tr-pts-lbl{font-size:9px;color:var(--muted);text-align:right;letter-spacing:1px;}
+.fast-btn{width:100%;padding:15px;border-radius:12px;border:none;cursor:pointer;font-family:var(--font);font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;margin-bottom:14px;}
+.fast-btn.off{background:var(--s2);border:2px dashed var(--dim);color:var(--muted);}
+.fast-btn.on{background:rgba(0,217,126,0.1);border:2px solid rgba(0,217,126,0.35);color:var(--green);}
+.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.pb2{background:var(--s2);border:2px solid var(--dim);border-radius:12px;padding:12px 4px;text-align:center;cursor:pointer;transition:all 0.15s;border:2px solid var(--dim);}
+.pb2.done{background:rgba(0,217,126,0.08);border-color:rgba(0,217,126,0.35);}
+.pe{font-size:18px;margin-bottom:3px;}
+.pk{font-size:14px;}
+.pna{font-size:9px;color:var(--muted);margin-top:2px;letter-spacing:0.2px;}
+.pb2.done .pna{color:var(--green);}
+.stats-r{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.sc{background:var(--s2);border:1px solid var(--dim);border-radius:12px;padding:12px;text-align:center;}
+.sc.tap{cursor:pointer;transition:border-color 0.2s;}
+.sc.tap:hover{border-color:var(--teal);}
+.sv{font-size:20px;font-weight:800;}
+.sl{font-size:9px;color:var(--muted);margin-top:2px;letter-spacing:0.5px;}
+
+/* === HADITH === */
+.had{background:linear-gradient(135deg,var(--s1),var(--s2));border:1px solid rgba(245,197,24,0.1);border-radius:var(--r);padding:18px;display:flex;gap:12px;}
+.had-icon{font-size:26px;flex-shrink:0;margin-top:2px;}
+.had-txt{font-size:13px;line-height:1.7;opacity:0.85;font-style:italic;}
+.had-src{font-size:10px;color:var(--gold);margin-top:8px;}
+
+/* === FAMILY GRID === */
+.fgrid{display:flex;flex-direction:column;gap:8px;}
+.mc{background:var(--s1);border:1px solid rgba(255,255,255,0.07);border-radius:var(--r);padding:14px;display:flex;align-items:center;gap:12px;}
+.mac{font-size:28px;width:44px;height:44px;background:var(--s2);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mi{flex:1;min-width:0;}
+.mn{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ms{display:flex;gap:8px;margin-top:3px;flex-wrap:wrap;}
+.mst{font-size:10px;color:var(--muted);}
+.mst span{color:var(--text);font-weight:600;}
+.mpts{font-size:22px;font-weight:900;flex-shrink:0;}
+.pdots{display:flex;gap:3px;margin-top:5px;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--dim);}
+.dot.on{background:var(--green);}
+
+/* === LEADERBOARD === */
+.lbr{display:flex;flex-direction:column;}
+.lr{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.lr:last-child{border-bottom:none;}
+.lrk{font-size:18px;font-weight:900;width:30px;text-align:center;}
+.lrav{font-size:22px;}
+.lrnm{flex:1;font-size:14px;font-weight:600;}
+.lrbw{flex:2;height:5px;background:var(--s3);border-radius:4px;overflow:hidden;}
+.lrb{height:100%;border-radius:4px;transition:width 0.8s ease;}
+.lrpt{font-size:16px;font-weight:800;width:44px;text-align:right;}
+
+/* === QURAN === */
+.qprog{height:10px;background:var(--s2);border-radius:100px;overflow:hidden;margin:8px 0;}
+.qfill{height:100%;background:linear-gradient(90deg,var(--gold),var(--teal));border-radius:100px;transition:width 0.8s;}
+.qrow{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.qn{font-size:11px;color:var(--muted);width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.qb{flex:1;height:5px;background:var(--s2);border-radius:100px;overflow:hidden;}
+.qbf{height:100%;border-radius:100px;transition:width 0.6s;}
+.qpg{font-size:10px;color:var(--muted);width:44px;text-align:right;}
+.qadd-btn{margin-top:10px;background:var(--gd);border:1px solid rgba(245,197,24,0.25);border-radius:10px;padding:10px;font-size:12px;color:var(--gold);cursor:pointer;font-family:var(--font);font-weight:600;width:100%;transition:all 0.2s;}
+.qadd-btn:hover{background:rgba(245,197,24,0.18);}
+
+/* === GOOD DEEDS === */
+.dl{display:flex;flex-direction:column;gap:6px;max-height:190px;overflow-y:auto;margin-bottom:10px;}
+.di{display:flex;align-items:center;gap:8px;background:var(--s2);border-radius:10px;padding:10px 12px;}
+.de{font-size:16px;flex-shrink:0;}
+.dt{flex:1;font-size:12px;opacity:0.85;}
+.dw{font-size:10px;font-weight:700;}
+.d-inp-row{display:flex;gap:8px;}
+.d-inp{flex:1;background:var(--s2);border:1.5px solid var(--dim);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--text);font-family:var(--font);outline:none;transition:border-color 0.2s;}
+.d-inp:focus{border-color:var(--teal);}
+.d-add{background:var(--td);border:1px solid rgba(0,212,170,0.3);border-radius:10px;padding:10px 14px;color:var(--teal);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.2s;}
+.d-add:hover{background:rgba(0,212,170,0.18);}
+
+/* === BADGES === */
+.bdg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.bi{background:var(--s2);border:1px solid var(--dim);border-radius:12px;padding:12px 6px;text-align:center;transition:all 0.2s;}
+.bi.earned{border-color:rgba(245,197,24,0.4);background:var(--gd);}
+.bi.locked{opacity:0.4;}
+.bic{font-size:24px;margin-bottom:4px;}
+.bin{font-size:9px;font-weight:600;line-height:1.3;}
+.bir{font-size:8px;color:var(--muted);margin-top:2px;}
+
+/* === LAST 10 NIGHTS === */
+.ngrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.ni{background:var(--s2);border:1px solid var(--dim);border-radius:10px;padding:10px 4px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.ni.qadr{background:linear-gradient(135deg,rgba(245,197,24,0.1),rgba(255,107,157,0.08));border-color:rgba(245,197,24,0.3);animation:glo 2s infinite;}
+.ni.cur{border-color:var(--gold);}
+@keyframes glo{0%,100%{box-shadow:0 0 6px rgba(245,197,24,0.2);}50%{box-shadow:0 0 14px rgba(245,197,24,0.45);}}
+.nnm{font-size:16px;font-weight:800;color:var(--gold);}
+.nlb{font-size:8px;color:var(--muted);margin-top:2px;}
+
+/* === GAMES === */
+.gtabs{display:flex;gap:7px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px;}
+.gtab{background:var(--s2);border:1px solid var(--dim);border-radius:50px;padding:8px 16px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--font);white-space:nowrap;transition:all 0.2s;flex-shrink:0;}
+.gtab.on{background:var(--gd);border-color:rgba(245,197,24,0.4);color:var(--gold);}
+.gp{display:none;}.gp.on{display:block;}
+
+/* DHIKR */
+.dhw{text-align:center;}
+.dhsel{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;}
+.dht{background:var(--s2);border:2px solid var(--dim);border-radius:50px;padding:7px 14px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);color:var(--muted);transition:all 0.15s;}
+.dht.on{border-color:var(--gold);color:var(--gold);background:var(--gd);}
+.dhcnts{display:flex;justify-content:center;gap:18px;margin-bottom:18px;}
+.dhc{text-align:center;}
+.dhcn{font-size:30px;font-weight:900;}
+.dhcn.done{color:var(--gold);}
+.dhcl{font-size:9px;color:var(--muted);margin-top:2px;letter-spacing:0.5px;}
+.dhct{font-size:9px;color:var(--teal);margin-top:1px;}
+.tapbtn{width:170px;height:170px;border-radius:50%;margin:0 auto 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:linear-gradient(135deg,var(--gd),var(--td));border:3px solid rgba(245,197,24,0.3);cursor:pointer;font-family:var(--font);color:var(--text);position:relative;overflow:hidden;transition:transform 0.08s;}
+.tapbtn:active{transform:scale(0.91);}
+.tpar{font-size:19px;line-height:1.4;}
+.tpen{font-size:11px;color:var(--muted);}
+.tpht{font-size:8px;color:var(--dim);margin-top:3px;letter-spacing:1px;}
+.dhtot{font-size:12px;color:var(--muted);text-align:center;}
+.dhtot-n{font-size:22px;font-weight:900;color:var(--gold);margin:0 4px;}
+.dhcomp{background:rgba(0,217,126,0.08);border:1px solid rgba(0,217,126,0.25);border-radius:12px;padding:14px;margin-top:14px;font-size:14px;font-weight:700;color:var(--green);text-align:center;display:none;}
+.dhrst{background:none;border:1px solid var(--dim);border-radius:8px;padding:6px 14px;font-size:11px;color:var(--muted);cursor:pointer;font-family:var(--font);margin:10px auto 0;display:block;transition:all 0.2s;}
+.dhrst:hover{border-color:var(--red);color:var(--red);}
+.ripple{position:absolute;width:60px;height:60px;border-radius:50%;background:rgba(245,197,24,0.22);animation:rpl 0.55s ease-out;pointer-events:none;}
+@keyframes rpl{0%{transform:scale(0);opacity:0.8;}100%{transform:scale(4.5);opacity:0;}}
+
+/* QUIZ */
+.qzh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.qzpg{font-size:12px;color:var(--muted);}
+.qzsc{background:var(--gd);border:1px solid rgba(245,197,24,0.3);border-radius:50px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--gold);}
+.qztb{height:4px;background:var(--s2);border-radius:4px;overflow:hidden;margin-bottom:12px;}
+.qztf{height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));border-radius:4px;transition:width 0.1s linear;}
+.qzq{font-size:15px;font-weight:600;margin-bottom:14px;line-height:1.5;}
+.qzo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+@media(max-width:360px){.qzo{grid-template-columns:1fr;}}
+.qzopt{background:var(--s2);border:2px solid var(--dim);border-radius:10px;padding:12px;font-size:12px;cursor:pointer;font-family:var(--font);color:var(--text);text-align:left;transition:all 0.15s;font-weight:500;line-height:1.4;}
+.qzopt:hover:not(:disabled){border-color:rgba(245,197,24,0.35);}
+.qzopt.ok{background:rgba(0,217,126,0.1);border-color:var(--green);color:var(--green);}
+.qzopt.ng{background:rgba(255,69,96,0.08);border-color:var(--red);color:var(--red);}
+.qzfb{font-size:12px;color:var(--muted);min-height:16px;margin-bottom:10px;text-align:center;line-height:1.4;}
+.qznxt{background:var(--gd);border:1px solid rgba(245,197,24,0.4);border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:var(--gold);cursor:pointer;font-family:var(--font);width:100%;}
+.qzres{text-align:center;padding:14px;}
+.qzrsc{font-size:56px;font-weight:900;color:var(--gold);}
+.qzrmsg{font-size:14px;opacity:0.8;margin-top:10px;}
+.qzrst{margin-top:14px;background:var(--gd);border:1px solid rgba(245,197,24,0.4);border-radius:10px;padding:12px 24px;font-size:14px;font-weight:700;color:var(--gold);cursor:pointer;font-family:var(--font);}
+
+/* BINGO */
+.bgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px;}
+@media(max-width:360px){.bgrid{grid-template-columns:repeat(3,1fr);}}
+.bc{background:var(--s2);border:2px solid var(--dim);border-radius:10px;padding:10px 4px;text-align:center;cursor:pointer;transition:all 0.12s;}
+.bc.done{background:rgba(0,217,126,0.09);border-color:rgba(0,217,126,0.3);transform:scale(0.96);}
+.bci{font-size:20px;margin-bottom:3px;}
+.bct{font-size:8px;color:var(--muted);line-height:1.3;}
+.bc.done .bct{color:var(--green);}
+.bstat{text-align:center;font-size:13px;color:var(--muted);}
+.bcnt{font-size:24px;font-weight:900;color:var(--teal);}
+.bwin{margin-top:8px;font-size:14px;font-weight:700;color:var(--green);display:none;}
+
+/* === PROFILE === */
+.ph{display:flex;align-items:center;gap:14px;padding:18px;background:var(--s1);border:1px solid rgba(255,255,255,0.07);border-radius:var(--r);margin-bottom:14px;}
+.pav{font-size:44px;width:68px;height:68px;background:var(--s2);border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--gold);}
+.pn{font-size:20px;font-weight:800;}
+.ps{font-size:12px;color:var(--muted);margin-top:3px;}
+.ppts{font-size:22px;font-weight:900;color:var(--gold);}
+.ul{display:flex;flex-direction:column;gap:6px;}
+.uit{display:flex;align-items:center;gap:10px;background:var(--s2);border-radius:10px;padding:12px;cursor:pointer;transition:all 0.15s;border:1.5px solid transparent;}
+.uit:hover,.uit.on{border-color:var(--gold);}
+.uiav{font-size:22px;}
+.uinm{flex:1;font-size:14px;font-weight:600;}
+.uipts{font-size:13px;color:var(--gold);font-weight:700;}
+.add-u{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--s2);border:1.5px dashed var(--dim);border-radius:10px;padding:14px;cursor:pointer;font-size:14px;color:var(--muted);font-family:var(--font);transition:all 0.2s;margin-top:8px;width:100%;}
+.add-u:hover{border-color:var(--text);color:var(--text);}
+.fam-box{background:var(--s2);border-radius:12px;padding:16px;margin-top:12px;}
+.fam-code{font-size:28px;font-weight:900;color:var(--gold);letter-spacing:6px;text-align:center;margin:10px 0;}
+.fam-mbrs{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+.fmb{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--s1);border-radius:8px;}
+.fmbav{font-size:18px;}
+.fmbnm{flex:1;font-size:13px;font-weight:600;}
+.creator-badge{font-size:9px;color:var(--gold);background:var(--gd);border-radius:4px;padding:2px 6px;letter-spacing:1px;}
+.rm-btn{background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:4px;opacity:0.7;}
+.rm-btn:hover{opacity:1;}
+.fam-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+.fam-btn{padding:10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);border:none;transition:all 0.2s;}
+.fam-btn-gold{background:var(--gold);color:#000;}
+.fam-btn-out{background:transparent;border:1.5px solid var(--dim);color:var(--text);}
+
+/* === MINI MODAL === */
+.mino{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:800;display:flex;align-items:flex-end;justify-content:center;}
+.mino.h{display:none;}
+.mins{background:var(--s1);border-radius:24px 24px 0 0;padding:28px 24px calc(40px + env(safe-area-inset-bottom,0px));width:100%;max-width:520px;border-top:1px solid rgba(255,255,255,0.08);}
+.minti{font-size:18px;font-weight:800;margin-bottom:6px;}
+.minsub{font-size:13px;color:var(--muted);margin-bottom:18px;}
+
+/* === TOAST === */
+.toast{position:fixed;bottom:calc(var(--nav) + 14px);left:50%;transform:translateX(-50%);background:var(--s3);border:1px solid rgba(255,255,255,0.1);border-radius:50px;padding:10px 20px;font-size:13px;font-weight:600;z-index:600;white-space:nowrap;animation:tin 0.25s ease;pointer-events:none;}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(10px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+
+/* === CONFETTI === */
+.cfwrap{position:fixed;inset:0;pointer-events:none;z-index:9999;}
+.cf{position:absolute;border-radius:2px;animation:cfall 3s ease-in forwards;}
+@keyframes cfall{0%{transform:translateY(-20px) rotate(0);opacity:1;}100%{transform:translateY(100vh) rotate(720deg);opacity:0;}}
+
+/* === EMPTY === */
+.empty{text-align:center;padding:28px 16px;color:var(--muted);font-size:13px;}
+.ei{font-size:36px;margin-bottom:8px;}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-thumb{background:var(--dim);border-radius:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboarding" class="overlay hidden">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div id="ob-step1" class="step active">
+      <div class="ob-title">🌙 Welcome to Ramadan</div>
+      <div class="ob-sub">Track your prayers, fasting, and good deeds. Pick an avatar and enter your name to begin.</div>
+      <div class="avatar-grid" id="av-grid"></div>
+      <input class="inp" id="nm-inp" placeholder="Your name" maxlength="20" autocomplete="off">
+      <div class="inp-label">City (for prayer times)</div>
+      <input class="inp" id="city-inp" placeholder="e.g. London, Dubai, Karachi" autocomplete="off">
+      <button class="btn btn-gold" onclick="ob1Next()">Continue →</button>
+    </div>
+    <div id="ob-step2" class="step">
+      <div class="ob-title">👨‍👩‍👧‍👦 Join a Family?</div>
+      <div class="ob-sub">Track together with family on the same device. You can also do this later from your Profile.</div>
+      <input class="inp code" id="fc-inp" placeholder="CODE" maxlength="4" autocomplete="off">
+      <div class="fam-actions">
+        <button class="btn btn-gold" onclick="ob2Join()">Join Family</button>
+        <button class="btn btn-out" onclick="ob2Create()">Create New</button>
+      </div>
+      <button class="btn btn-out" style="margin-top:8px;" onclick="ob2Skip()">Skip for now</button>
+      <div class="hint">Family code is 4 letters, e.g. SHAH, NOOR, SABR<br>All family members must be on the same device</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD USER MINI MODAL -->
+<div id="add-user-modal" class="mino h">
+  <div class="mins">
+    <div class="handle"></div>
+    <div class="minti">Add Profile</div>
+    <div class="minsub">Create a new user profile on this device</div>
+    <div class="avatar-grid" id="av-grid2"></div>
+    <input class="inp" id="au-nm" placeholder="Name" maxlength="20" autocomplete="off">
+    <input class="inp" id="au-city" placeholder="City for prayer times (optional)" autocomplete="off" style="margin-top:8px;">
+    <button class="btn btn-gold" onclick="addUserConfirm()" style="margin-top:12px;">Add Profile</button>
+    <button class="btn btn-out" onclick="closeAddUser()">Cancel</button>
+  </div>
+</div>
+
+<!-- FAMILY JOIN/CREATE MINI MODAL -->
+<div id="fam-modal" class="mino h">
+  <div class="mins">
+    <div class="handle"></div>
+    <div class="minti" id="fm-title">Join a Family</div>
+    <div class="minsub" id="fm-sub">Enter the 4-letter family code</div>
+    <input class="inp code" id="fm-code" placeholder="CODE" maxlength="4" autocomplete="off">
+    <button class="btn btn-gold" id="fm-btn" onclick="famModalConfirm()">Join</button>
+    <button class="btn btn-out" onclick="closeFamModal()">Cancel</button>
+    <div class="hint" id="fm-hint">All family members must use the same device</div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">🌙 RAMADAN<span class="logo-sub">tracker</span></div>
+  <div class="header-r">
+    <div class="clock" id="clock">--:--:--</div>
+    <div class="upill" onclick="showTab('profile')">
+      <span class="upill-av" id="pill-av">🌙</span>
+      <span class="upill-nm" id="pill-nm">...</span>
+      <span class="fbadge" id="pill-fam" style="display:none"></span>
+    </div>
+  </div>
+</div>
+
+<!-- HERO STRIP -->
+<div class="hero">
+  <div class="hi">
+    <div class="hl">Ramadan Day</div>
+    <div class="hv" id="h-day">--</div>
+    <div class="hs">of 30</div>
+  </div>
+  <div class="hi">
+    <div class="hl" id="h-cl">Next Iftar</div>
+    <div class="hv t" id="h-cd">--:--:--</div>
+    <div class="hs" id="h-ct">--:--</div>
+  </div>
+  <div class="hi">
+    <div class="hl">Eid</div>
+    <div class="hv t" id="h-eid">-- days</div>
+    <div class="hs">Eid al-Fitr</div>
+  </div>
+  <div class="hi">
+    <div class="hl">My Points</div>
+    <div class="hv" id="h-pts">0</div>
+    <div class="hs">today ⭐</div>
+  </div>
+</div>
+
+<!-- PRAYER BAR -->
+<div class="pbar" id="pbar">
+  <div class="pi"><div class="pn">🌅 Fajr</div><div class="pt">--:--</div></div>
+  <div class="pi"><div class="pn">☀️ Dhuhr</div><div class="pt">--:--</div></div>
+  <div class="pi"><div class="pn">🌤 Asr</div><div class="pt">--:--</div></div>
+  <div class="pi"><div class="pn">🌇 Maghrib</div><div class="pt">--:--</div></div>
+  <div class="pi"><div class="pn">🌙 Isha</div><div class="pt">--:--</div></div>
+</div>
+
+<!-- CONTENT -->
+<div class="content" id="content">
+  <div class="ci">
+
+    <!-- MY DAY TAB -->
+    <div id="tab-day" class="tab on">
+      <!-- Hadith -->
+      <div class="had">
+        <div class="had-icon">📖</div>
+        <div>
+          <div class="had-txt" id="had-txt">"When Ramadan enters, the gates of Paradise are opened..."</div>
+          <div class="had-src" id="had-src">— Sahih al-Bukhari 1899</div>
+        </div>
+      </div>
+
+      <!-- Personal Tracker -->
+      <div class="card" id="tracker-card">
+        <div class="tr-head">
+          <div>
+            <div class="tr-name" id="tr-name">Loading...</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;" id="tr-city"></div>
+          </div>
+          <div>
+            <div class="tr-pts-val" id="tr-pts">0</div>
+            <div class="tr-pts-lbl">POINTS</div>
+          </div>
+        </div>
+        <button class="fast-btn off" id="fast-btn" onclick="toggleFast()">
+          <span>🌙</span><span>Mark as Fasting</span>
+        </button>
+        <div class="pg" id="prayers-grid"></div>
+        <div class="stats-r">
+          <div class="sc tap" onclick="addQuranPage()" title="Tap to add page">
+            <div class="sv" id="sc-quran">0</div>
+            <div class="sl">📖 Pages +</div>
+          </div>
+          <div class="sc">
+            <div class="sv" id="sc-prayers">0/6</div>
+            <div class="sl">Prayers</div>
+          </div>
+          <div class="sc">
+            <div class="sv" id="sc-streak">0</div>
+            <div class="sl">Day Streak 🔥</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Good Deeds -->
+      <div class="card">
+        <div class="sec">Good Deeds</div>
+        <div class="dl" id="deeds-list"></div>
+        <div class="d-inp-row">
+          <input class="d-inp" id="deed-inp" placeholder="Log a good deed..." maxlength="60" autocomplete="off">
+          <button class="d-add" onclick="addDeed()">+ Add</button>
+        </div>
+      </div>
+
+      <!-- Quran Tracker (personal) -->
+      <div class="card" id="q-personal">
+        <div class="sec">My Quran Progress</div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;">
+          <span>Pages read this Ramadan</span>
+          <span id="q-pct">0%</span>
+        </div>
+        <div class="qprog"><div class="qfill" id="q-bar" style="width:0%"></div></div>
+        <div style="font-size:11px;color:var(--muted);text-align:right;" id="q-pages-total">0 / 604 pages</div>
+        <button class="qadd-btn" onclick="addQuranPage()">+ Add Page Read</button>
+      </div>
+
+      <!-- Badges -->
+      <div class="card">
+        <div class="sec">Achievements</div>
+        <div class="bdg" id="badges"></div>
+      </div>
+
+      <!-- Last 10 Nights -->
+      <div class="card" id="last10" style="display:none">
+        <div class="sec">⭐ Last 10 Nights</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5;">"Seek Laylatul Qadr in the odd nights of the last 10 nights." — Bukhari</div>
+        <div class="ngrid" id="nights-grid"></div>
+      </div>
+    </div>
+
+    <!-- FAMILY TAB -->
+    <div id="tab-family" class="tab">
+      <!-- Leaderboard -->
+      <div class="card">
+        <div class="sec">Leaderboard</div>
+        <div class="lbr" id="leaderboard"></div>
+      </div>
+      <!-- Family Members -->
+      <div class="card">
+        <div class="sec">Family Tracker</div>
+        <div class="fgrid" id="family-grid"></div>
+      </div>
+      <!-- Family Quran combined -->
+      <div class="card" id="fam-quran">
+        <div class="sec">Family Quran Goal</div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;">
+          <span>Complete Quran by Eid</span>
+          <span id="fq-pct">0%</span>
+        </div>
+        <div class="qprog"><div class="qfill" id="fq-bar" style="width:0%"></div></div>
+        <div class="fgrid" id="fam-quran-rows" style="margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <!-- GAMES TAB -->
+    <div id="tab-games" class="tab">
+      <div class="gtabs">
+        <button class="gtab on" onclick="switchGame('dhikr',this)">📿 Dhikr</button>
+        <button class="gtab" onclick="switchGame('quiz',this)">🧠 Quiz</button>
+        <button class="gtab" onclick="switchGame('bingo',this)">✅ Bingo</button>
+      </div>
+
+      <!-- DHIKR -->
+      <div class="gp on" id="gp-dhikr">
+        <div class="card">
+          <div class="dhw">
+            <div class="dhsel">
+              <button class="dht on" onclick="setDhikr('subhan',this)">سُبْحَانَ ٱللَّٰه</button>
+              <button class="dht" onclick="setDhikr('hamd',this)">ٱلْحَمْدُ لِلَّٰه</button>
+              <button class="dht" onclick="setDhikr('akbar',this)">ٱللَّٰه أَكْبَر</button>
+              <button class="dht" onclick="setDhikr('all',this)">🔄 All Three</button>
+            </div>
+            <div class="dhcnts">
+              <div class="dhc"><div class="dhcn" id="dc-s">0</div><div class="dhcl">SubhanAllah</div><div class="dhct">/ 33</div></div>
+              <div class="dhc"><div class="dhcn" id="dc-h">0</div><div class="dhcl">Alhamdulillah</div><div class="dhct">/ 33</div></div>
+              <div class="dhc"><div class="dhcn" id="dc-a">0</div><div class="dhcl">Allahu Akbar</div><div class="dhct">/ 33</div></div>
+            </div>
+            <button class="tapbtn" id="tapbtn" onclick="tap(event)">
+              <div class="tpar" id="tap-ar">سُبْحَانَ ٱللَّٰه</div>
+              <div class="tpen" id="tap-en">SubhanAllah</div>
+              <div class="tpht">TAP</div>
+            </button>
+            <div class="dhtot">Total: <span class="dhtot-n" id="dh-tot">0</span> / 99</div>
+            <div class="dhcomp" id="dh-comp">🌟 MashaAllah! 99 Dhikr complete! Allah is pleased with you!</div>
+            <button class="dhrst" onclick="resetDhikr()">↺ Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div class="gp" id="gp-quiz">
+        <div class="card" id="quiz-cont"></div>
+      </div>
+
+      <!-- BINGO -->
+      <div class="gp" id="gp-bingo">
+        <div class="card">
+          <div class="sec">Good Deed Bingo</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Complete 8 or more good deeds to win! 🏆</div>
+          <div class="bgrid" id="bingo-grid"></div>
+          <div class="bstat">Completed: <span class="bcnt" id="bingo-cnt">0</span> / 12
+            <div class="bwin" id="bingo-win">🏆 MashaAllah! Good Deed Champion!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE TAB -->
+    <div id="tab-profile" class="tab">
+      <!-- Current User -->
+      <div class="ph" id="prof-head">
+        <div class="pav" id="prof-av">🌙</div>
+        <div style="flex:1">
+          <div class="pn" id="prof-nm">Loading</div>
+          <div class="ps" id="prof-sub">loading...</div>
+          <div class="ppts" id="prof-pts">0 pts</div>
+        </div>
+      </div>
+
+      <!-- Switch User -->
+      <div class="card">
+        <div class="sec">Profiles on this device</div>
+        <div class="ul" id="user-list"></div>
+        <button class="add-u" onclick="openAddUser()">
+          <span style="font-size:20px;">+</span> Add Profile
+        </button>
+      </div>
+
+      <!-- Family Management -->
+      <div class="card" id="fam-mgmt">
+        <div class="sec">Family</div>
+        <div id="fam-content"></div>
+      </div>
+
+      <!-- Settings -->
+      <div class="card">
+        <div class="sec">Settings</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+          <div style="margin-bottom:8px;">Prayer times are fetched based on your city. To update your city, remove and re-add your profile.</div>
+          <div>All data is stored locally on this device. Switching devices will start fresh.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <button class="ntab on" id="nav-day" onclick="showTab('day')">
+    <span class="nicon">🌙</span><span class="nlbl">My Day</span>
+  </button>
+  <button class="ntab" id="nav-family" onclick="showTab('family')">
+    <span class="nicon">👨‍👩‍👧‍👦</span><span class="nlbl">Family</span>
+  </button>
+  <button class="ntab" id="nav-games" onclick="showTab('games')">
+    <span class="nicon">🎮</span><span class="nlbl">Games</span>
+  </button>
+  <button class="ntab" id="nav-profile" onclick="showTab('profile')">
+    <span class="nicon">👤</span><span class="nlbl">Profile</span>
+  </button>
+</nav>
+
+<script>
+// ==================== CONSTANTS ====================
+const RAMADAN_START = new Date('2026-03-01');
+const EID_DATE = new Date('2026-03-31');
+const TODAY = new Date().toISOString().slice(0,10);
+const PRAYERS = ['Fajr','Dhuhr','Asr','Maghrib','Isha','Taraweeh'];
+const PEMOJI = {Fajr:'🌅',Dhuhr:'☀️',Asr:'🌤',Maghrib:'🌇',Isha:'🌙',Taraweeh:'🕌'};
+const AVATARS = ['🌙','⭐','🤲','📖','🕌','🌟','🦋','🌸','🌺','🎁','🏆','💎','🌈','🦁','🌿','🕊️','💫','🌻','🎯','🔮','🌓','☪️'];
+const COLORS = ['#F5C518','#00D4AA','#FF6B9D','#9B59B6','#3498DB','#6BCB77','#E67E22','#E74C3C','#1ABC9C','#F39C12','#8E44AD','#2ECC71'];
+const DEED_EMOJIS = ['🌟','💛','🤲','✨','💚','🌸','🕊️','🦋','🌈','🎁','🌺','💜'];
+const HADITHS = [
+  {t:'"When Ramadan enters, the gates of Paradise are opened, the gates of Hellfire are closed, and the devils are chained."',s:'Sahih al-Bukhari 1899'},
+  {t:'"Whoever fasts Ramadan out of faith and hope for reward, all his previous sins will be forgiven."',s:'Sahih al-Bukhari 38'},
+  {t:'"The best charity is that given in Ramadan."',s:'Tirmidhi 663'},
+  {t:'"Seek Laylatul Qadr on the odd-numbered nights of the last ten nights of Ramadan."',s:'Sahih al-Bukhari 2017'},
+  {t:'"Fasting is a shield. When one of you is fasting, he should not utter foul words, nor behave foolishly."',s:'Sahih al-Bukhari 1904'},
+  {t:'"There is a gate in Paradise called al-Rayyan, through which those who fasted will enter."',s:'Sahih al-Bukhari 1896'},
+  {t:'"In Ramadan the believer has two joys: one when breaking the fast, and one when meeting his Lord."',s:'Sahih al-Bukhari 7054'},
+  {t:'"The month of Ramadan is the one in which the Quran was sent down, a guidance for the people."',s:'Quran 2:185'},
+];
+const QUIZZES = [
+  {q:'How many days does Ramadan last?',o:['28 days','29 or 30 days','31 days','25 days'],a:1,e:'Ramadan is either 29 or 30 days depending on the moon sighting.'},
+  {q:'What is the pre-dawn meal called?',o:['Iftar','Suhoor','Zakat','Wudu'],a:1,e:'Suhoor is the pre-dawn meal eaten before Fajr prayer.'},
+  {q:'What is the Sunnah way to break the fast?',o:['Water only','Dates and water','A full meal','Any halal food'],a:1,e:'The Sunnah is to break fast with dates and water, following the Prophet ﷺ.'},
+  {q:'Laylatul Qadr is better than how long?',o:['100 nights','500 nights','1000 months','One year'],a:2,e:'Laylatul Qadr is better than 1000 months — over 83 years of worship!'},
+  {q:'How many pillars of Islam are there?',o:['3','4','5','6'],a:2,e:'The Five Pillars: Shahada, Salah, Zakat, Sawm (fasting), Hajj.'},
+  {q:'Which surah is the heart of the Quran?',o:['Al-Fatiha','Ya-Sin','Al-Baqarah','Al-Ikhlas'],a:1,e:'Surah Ya-Sin is often called the heart of the Quran.'},
+  {q:'What is the Arabic word for fasting?',o:['Salah','Zakat','Sawm','Hajj'],a:2,e:'Sawm (صوم) is the Arabic word for fasting.'},
+  {q:'In which month was the Quran first revealed?',o:['Muharram',"Sha'ban",'Ramadan','Dhul Hijjah'],a:2,e:'The Quran was first revealed in the month of Ramadan.'},
+  {q:'Which prayer is only in Ramadan?',o:['Ishraq','Duha','Taraweeh','Tahajjud'],a:2,e:'Taraweeh is a special night prayer performed only during Ramadan.'},
+  {q:'How many times do Muslims pray each day?',o:['3','4','5','6'],a:2,e:'Muslims pray 5 times daily: Fajr, Dhuhr, Asr, Maghrib and Isha.'},
+  {q:'What does "Alhamdulillah" mean?',o:['God is Great','All praise be to God','In the name of God','Peace be upon you'],a:1,e:'Alhamdulillah (الحمد لله) means "All praise and thanks be to Allah."'},
+  {q:'Which angel brought the Quran?',o:['Mikail','Israfil','Jibreel','Izrail'],a:2,e:'Angel Jibreel (Gabriel) brought the revelation to Prophet Muhammad ﷺ.'},
+];
+const BINGO_DEEDS = [
+  {i:'🤲',t:'Made dua for family'},{i:'📖',t:'Read Quran'},{i:'🍱',t:'Shared food'},
+  {i:'😊',t:'Smiled at someone'},{i:'🧹',t:'Helped at home'},{i:'💰',t:'Gave sadaqah'},
+  {i:'📞',t:'Called a relative'},{i:'🕌',t:'Prayed in congregation'},{i:'🤝',t:'Helped someone'},
+  {i:'💧',t:'Gave water'},{i:'🌟',t:'Said kind words'},{i:'🦁',t:'Stood up for truth'},
+];
+const BADGES_DEF = [
+  {i:'🌅',n:'Dawn Warrior',r:'3 Fajr prayers',c:(u)=>countPrayerDays(u,'Fajr')>=3},
+  {i:'🕌',n:'Night Knight',r:'5 Taraweeh',c:(u)=>countPrayerDays(u,'Taraweeh')>=5},
+  {i:'📖',n:'Quran Champ',r:'30 pages read',c:(u)=>totalQPages(u)>=30},
+  {i:'🌙',n:'Fasting Hero',r:'7 fasts',c:(u)=>countFasts(u)>=7},
+  {i:'💛',n:'Golden Heart',r:'5 good deeds',c:(u)=>getDeeds().filter(d=>d.who===u.name).length>=5},
+  {i:'⭐',n:'Full Prayer',r:'All 6 prayers today',c:(u)=>{const d=getDayData(u.name,TODAY);return PRAYERS.every(p=>d.prayers[p]);}},
+  {i:'🤲',n:'Dhikr Master',r:'99 dhikr complete',c:(u)=>{const d=getDhikr(u.name);return(d.subhan||0)>=33&&(d.hamd||0)>=33&&(d.akbar||0)>=33;}},
+  {i:'🏆',n:'Point Leader',r:'100+ points',c:(u)=>getTodayPts(u.name)>=100},
+];
+
+// ==================== STORAGE ====================
+const S = {
+  get:(k)=>{try{return JSON.parse(localStorage.getItem(k)||'null');}catch{return null;}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},
+  getUsers:()=>S.get('rmd_users')||[],
+  addUser:(n)=>{const u=S.getUsers();if(!u.includes(n)){u.push(n);S.set('rmd_users',u);}},
+  removeUserFromList:(n)=>{const u=S.getUsers().filter(x=>x!==n);S.set('rmd_users',u);},
+  getCurrent:()=>S.get('rmd_current')||null,
+  setCurrent:(n)=>S.set('rmd_current',n),
+  getProfile:(n)=>S.get(`rmd_profile_${n}`)||null,
+  saveProfile:(p)=>S.set(`rmd_profile_${p.name}`,p),
+  getFamily:(code)=>S.get(`rmd_fam_${code.toUpperCase()}`)||null,
+  saveFamily:(f)=>S.set(`rmd_fam_${f.code}`,f),
+};
+
+function getDayData(name, day) {
+  return S.get(`rmd_day_${name}_${day}`) || {
+    prayers:{Fajr:false,Dhuhr:false,Asr:false,Maghrib:false,Isha:false,Taraweeh:false},
+    fasting:false, quranPages:0
+  };
+}
+function saveDayData(name, day, d) { S.set(`rmd_day_${name}_${day}`, d); }
+function getAllDays(name) {
+  const key = `rmd_day_${name}_`;
+  const res = {};
+  for (let i=0; i<localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith(key)) res[k.slice(key.length)] = S.get(k);
+  }
+  return res;
+}
+function getDhikr(name) { return S.get(`rmd_dhikr_${name}`) || {subhan:0,hamd:0,akbar:0}; }
+function saveDhikr(name, d) { S.set(`rmd_dhikr_${name}`, d); }
+function getBingo(name) { return S.get(`rmd_bingo_${name}`) || []; }
+function saveBingo(name, d) { S.set(`rmd_bingo_${name}`, d); }
+function getDeeds() { return S.get('rmd_deeds') || []; }
+function pushDeed(d) { const arr=getDeeds(); arr.unshift(d); S.set('rmd_deeds',arr.slice(0,80)); }
+
+// ==================== POINTS ====================
+function getTodayPts(name) {
+  const d = getDayData(name, TODAY);
+  let pts = 0;
+  if (d.fasting) pts += 100;
+  if (d.prayers.Fajr) pts += 30;
+  if (d.prayers.Taraweeh) pts += 25;
+  ['Dhuhr','Asr','Maghrib','Isha'].forEach(p => { if (d.prayers[p]) pts += 20; });
+  pts += (d.quranPages||0) * 5;
+  const dk = getDhikr(name);
+  if ((dk.subhan||0)>=33&&(dk.hamd||0)>=33&&(dk.akbar||0)>=33) pts += 40;
+  return pts;
+}
+function getAllTimePts(name) {
+  let pts = 0;
+  Object.values(getAllDays(name)).forEach(d => {
+    if (!d) return;
+    if (d.fasting) pts += 100;
+    if (d.prayers?.Fajr) pts += 30;
+    if (d.prayers?.Taraweeh) pts += 25;
+    ['Dhuhr','Asr','Maghrib','Isha'].forEach(p => { if (d.prayers?.[p]) pts += 20; });
+    pts += (d.quranPages||0)*5;
+  });
+  return pts;
+}
+
+// Badge helpers
+function countPrayerDays(u,p) { return Object.values(getAllDays(u.name)).filter(d=>d?.prayers?.[p]).length; }
+function countFasts(u) { return Object.values(getAllDays(u.name)).filter(d=>d?.fasting).length; }
+function totalQPages(u) { return Object.values(getAllDays(u.name)).reduce((s,d)=>s+(d?.quranPages||0),0); }
+function getFastingStreak(name) {
+  let streak = 0;
+  const d = new Date();
+  while (true) {
+    const k = d.toISOString().slice(0,10);
+    const data = getDayData(name, k);
+    if (!data.fasting) break;
+    streak++;
+    d.setDate(d.getDate()-1);
+    if (streak > 30) break;
+  }
+  return streak;
+}
+
+// ==================== STATE ====================
+let currentUser = null; // profile object
+let prayerTimes = {Fajr:'05:20',Dhuhr:'12:15',Asr:'15:30',Maghrib:'18:15',Isha:'19:45'};
+let selectedAvatar = AVATARS[0];
+let selectedAvatar2 = AVATARS[0];
+let famModalMode = 'join'; // 'join' | 'create'
+
+// ==================== INIT ====================
+async function init() {
+  renderAvatarGrid('av-grid', (av) => { selectedAvatar = av; });
+  renderAvatarGrid('av-grid2', (av) => { selectedAvatar2 = av; });
+  setHadith();
+  renderBingo();
+  startQuiz();
+
+  const name = S.getCurrent();
+  if (!name || !S.getProfile(name)) {
+    document.getElementById('onboarding').classList.remove('hidden');
+    return;
+  }
+  await loadUser(name);
+}
+
+async function loadUser(name) {
+  currentUser = S.getProfile(name);
+  S.setCurrent(name);
+  updateHeader();
+  renderTracker();
+  renderPrayerBar();
+  renderFamily();
+  renderLeaderboard();
+  renderProfile();
+  renderBadges();
+  renderDeeds();
+  renderFamQuran();
+  checkLastTenNights();
+  updateHero();
+  await fetchPrayerTimes(currentUser.city||'London');
+  renderPrayerBar();
+  updateClock();
+  setInterval(updateClock, 1000);
+  setInterval(() => { updateHero(); renderBadges(); }, 30000);
+}
+
+// ==================== ONBOARDING ====================
+function renderAvatarGrid(gridId, onSelect) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  grid.innerHTML = AVATARS.map((av,i) => `
+    <button class="av-btn${i===0?' sel':''}" onclick="selectAv('${gridId}','${av}',this)">${av}</button>
+  `).join('');
+  // set initial
+  if (gridId === 'av-grid') selectedAvatar = AVATARS[0];
+  else selectedAvatar2 = AVATARS[0];
+}
+function selectAv(gridId, av, btn) {
+  document.querySelectorAll(`#${gridId} .av-btn`).forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  if (gridId === 'av-grid') selectedAvatar = av;
+  else selectedAvatar2 = av;
+}
+function ob1Next() {
+  const name = document.getElementById('nm-inp').value.trim();
+  if (!name) { showToast('Please enter your name'); return; }
+  if (S.getUsers().includes(name)) { showToast('Name already taken on this device'); return; }
+  document.getElementById('ob-step1').classList.remove('active');
+  document.getElementById('ob-step2').classList.add('active');
+}
+function ob2Join() {
+  const name = document.getElementById('nm-inp').value.trim();
+  const city = document.getElementById('city-inp').value.trim() || 'London';
+  const code = document.getElementById('fc-inp').value.trim().toUpperCase();
+  if (!code || code.length < 2) { showToast('Enter a family code'); return; }
+  createUserProfile(name, city, code, false);
+}
+function ob2Create() {
+  const name = document.getElementById('nm-inp').value.trim();
+  const city = document.getElementById('city-inp').value.trim() || 'London';
+  const code = document.getElementById('fc-inp').value.trim().toUpperCase();
+  if (!code || code.length < 2) { showToast('Enter a code for your family'); return; }
+  createUserProfile(name, city, code, true);
+}
+function ob2Skip() {
+  const name = document.getElementById('nm-inp').value.trim();
+  const city = document.getElementById('city-inp').value.trim() || 'London';
+  createUserProfile(name, city, null, false);
+}
+function createUserProfile(name, city, familyCode, isCreator) {
+  const color = COLORS[Math.floor(Math.random()*COLORS.length)];
+  const profile = {name, city, avatar: selectedAvatar, color, familyCode: familyCode||null, isCreator};
+  S.saveProfile(profile);
+  S.addUser(name);
+  if (familyCode) {
+    let fam = S.getFamily(familyCode) || {code: familyCode, creator: isCreator ? name : null, members: []};
+    if (!fam.members.includes(name)) fam.members.push(name);
+    if (isCreator) fam.creator = name;
+    S.saveFamily(fam);
+  }
+  document.getElementById('onboarding').classList.add('hidden');
+  loadUser(name);
+}
+
+// ==================== ADD USER ====================
+function openAddUser() {
+  renderAvatarGrid('av-grid2', (av)=>{ selectedAvatar2=av; });
+  document.getElementById('au-nm').value = '';
+  document.getElementById('au-city').value = '';
+  document.getElementById('add-user-modal').classList.remove('h');
+}
+function closeAddUser() { document.getElementById('add-user-modal').classList.add('h'); }
+function addUserConfirm() {
+  const name = document.getElementById('au-nm').value.trim();
+  const city = document.getElementById('au-city').value.trim() || 'London';
+  if (!name) { showToast('Enter a name'); return; }
+  if (S.getUsers().includes(name)) { showToast('Name already taken'); return; }
+  const color = COLORS[Math.floor(Math.random()*COLORS.length)];
+  const profile = {name, city, avatar: selectedAvatar2, color, familyCode: null, isCreator: false};
+  S.saveProfile(profile);
+  S.addUser(name);
+  closeAddUser();
+  switchUser(name);
+}
+
+// ==================== FAMILY MODAL ====================
+function openFamModal(mode) {
+  famModalMode = mode;
+  document.getElementById('fm-title').textContent = mode==='join' ? 'Join a Family' : 'Create Family';
+  document.getElementById('fm-sub').textContent = mode==='join' ? 'Enter the 4-letter family code' : 'Create a 4-letter code for your family';
+  document.getElementById('fm-btn').textContent = mode==='join' ? 'Join' : 'Create';
+  document.getElementById('fm-hint').textContent = mode==='create' ? 'Pick something memorable — e.g. SHAH, NOOR, SABR' : 'All family members must be on the same device';
+  document.getElementById('fm-code').value = '';
+  document.getElementById('fam-modal').classList.remove('h');
+}
+function closeFamModal() { document.getElementById('fam-modal').classList.add('h'); }
+function famModalConfirm() {
+  const code = document.getElementById('fm-code').value.trim().toUpperCase();
+  if (!code || code.length < 2) { showToast('Enter a valid code'); return; }
+  if (!currentUser) return;
+  const isCreator = famModalMode === 'create';
+  let fam = S.getFamily(code) || {code, creator: isCreator ? currentUser.name : null, members: []};
+  if (!fam.members.includes(currentUser.name)) fam.members.push(currentUser.name);
+  if (isCreator) fam.creator = currentUser.name;
+  S.saveFamily(fam);
+  currentUser.familyCode = code;
+  currentUser.isCreator = isCreator;
+  S.saveProfile(currentUser);
+  closeFamModal();
+  renderProfile();
+  renderFamily();
+  renderLeaderboard();
+  updateHeader();
+  showToast(isCreator ? `✅ Family ${code} created!` : `✅ Joined family ${code}!`);
+}
+function leaveFamily() {
+  if (!currentUser || !currentUser.familyCode) return;
+  const fam = S.getFamily(currentUser.familyCode);
+  if (fam) {
+    fam.members = fam.members.filter(m=>m!==currentUser.name);
+    S.saveFamily(fam);
+  }
+  currentUser.familyCode = null;
+  currentUser.isCreator = false;
+  S.saveProfile(currentUser);
+  renderProfile();
+  renderFamily();
+  renderLeaderboard();
+  updateHeader();
+  showToast('Left the family');
+}
+function removeFamMember(name) {
+  if (!currentUser || !currentUser.isCreator || !currentUser.familyCode) return;
+  if (name === currentUser.name) { showToast("Can't remove yourself"); return; }
+  const fam = S.getFamily(currentUser.familyCode);
+  if (!fam) return;
+  fam.members = fam.members.filter(m=>m!==name);
+  S.saveFamily(fam);
+  // Remove family from that user's profile
+  const mp = S.getProfile(name);
+  if (mp) { mp.familyCode = null; mp.isCreator = false; S.saveProfile(mp); }
+  renderProfile();
+  renderFamily();
+  renderLeaderboard();
+  showToast(`${name} removed from family`);
+}
+
+// ==================== SWITCH USER ====================
+function switchUser(name) {
+  S.setCurrent(name);
+  currentUser = S.getProfile(name);
+  updateHeader();
+  renderTracker();
+  renderProfile();
+  renderBadges();
+  renderDeeds();
+  renderFamily();
+  renderLeaderboard();
+  renderFamQuran();
+  fetchPrayerTimes(currentUser.city||'London').then(()=>renderPrayerBar());
+  updateHero();
+  showToast(`Switched to ${name}`);
+}
+
+// ==================== HEADER ====================
+function updateHeader() {
+  if (!currentUser) return;
+  document.getElementById('pill-av').textContent = currentUser.avatar;
+  document.getElementById('pill-nm').textContent = currentUser.name;
+  const fb = document.getElementById('pill-fam');
+  if (currentUser.familyCode) {
+    fb.textContent = currentUser.familyCode;
+    fb.style.display = 'inline';
+  } else {
+    fb.style.display = 'none';
+  }
+}
+
+// ==================== PRAYER TIMES ====================
+async function fetchPrayerTimes(city) {
+  try {
+    const d = new Date();
+    const ds = `${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}`;
+    const res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${encodeURIComponent(city)}&country=&method=3&date=${ds}`);
+    const json = await res.json();
+    if (json.code === 200) {
+      const t = json.data.timings;
+      prayerTimes = {Fajr:t.Fajr,Dhuhr:t.Dhuhr,Asr:t.Asr,Maghrib:t.Maghrib,Isha:t.Isha};
+    }
+  } catch(e) {}
+}
+function renderPrayerBar() {
+  const toMin = t => { const [h,m] = (t||'00:00').split(':').map(Number); return h*60+m; };
+  const now = new Date();
+  const nowMin = now.getHours()*60 + now.getMinutes();
+  const entries = [
+    {n:'Fajr',e:'🌅',t:prayerTimes.Fajr},
+    {n:'Dhuhr',e:'☀️',t:prayerTimes.Dhuhr},
+    {n:'Asr',e:'🌤',t:prayerTimes.Asr},
+    {n:'Maghrib',e:'🌇',t:prayerTimes.Maghrib},
+    {n:'Isha',e:'🌙',t:prayerTimes.Isha},
+  ];
+  let nextIdx = entries.findIndex(e=>toMin(e.t)>nowMin);
+  if (nextIdx === -1) nextIdx = 0;
+  document.getElementById('pbar').innerHTML = entries.map((e,i) => {
+    const past = toMin(e.t) < nowMin;
+    const nxt = i === nextIdx;
+    return `<div class="pi${past?' past':''}${nxt?' nxt':''}">
+      <div class="pn">${e.e} ${e.n}</div>
+      <div class="pt">${e.t}</div>
+      ${nxt ? '<div class="pnxt">NEXT</div>' : ''}
+    </div>`;
+  }).join('');
+}
+
+// ==================== CLOCK + HERO ====================
+function updateClock() {
+  const n = new Date();
+  document.getElementById('clock').textContent = n.toTimeString().slice(0,8);
+  updateHero();
+}
+function updateHero() {
+  // Ramadan day
+  const now = new Date();
+  const diff = Math.floor((now - RAMADAN_START) / 86400000) + 1;
+  const day = Math.max(1, Math.min(30, diff));
+  document.getElementById('h-day').textContent = day;
+
+  // Eid countdown
+  const eidDiff = Math.ceil((EID_DATE - now) / 86400000);
+  document.getElementById('h-eid').textContent = eidDiff > 0 ? eidDiff + 'd' : '🎉';
+
+  // Iftar/Suhoor countdown
+  const toMin = t => { const [h,m]=(t||'00:00').split(':').map(Number);return h*60+m; };
+  const nowMin = now.getHours()*60 + now.getMinutes();
+  const fajrMin = toMin(prayerTimes.Fajr);
+  const maghMin = toMin(prayerTimes.Maghrib);
+  let target, label, timeStr;
+  if (nowMin < fajrMin) {
+    target = fajrMin; label = 'Suhoor'; timeStr = prayerTimes.Fajr;
+  } else if (nowMin < maghMin) {
+    target = maghMin; label = 'Iftar'; timeStr = prayerTimes.Maghrib;
+  } else {
+    target = fajrMin + 1440; label = 'Suhoor'; timeStr = prayerTimes.Fajr;
+  }
+  const diff2 = (target - nowMin) * 60 - now.getSeconds();
+  const h = Math.floor(diff2/3600), m = Math.floor((diff2%3600)/60), s = diff2%60;
+  document.getElementById('h-cl').textContent = label;
+  document.getElementById('h-cd').textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  document.getElementById('h-ct').textContent = `at ${timeStr}`;
+
+  // My points
+  if (currentUser) {
+    const pts = getTodayPts(currentUser.name);
+    document.getElementById('h-pts').textContent = pts;
+  }
+
+  // Last 10 nights
+  if (day >= 21) checkLastTenNights();
+}
+
+// ==================== TRACKER ====================
+function renderTracker() {
+  if (!currentUser) return;
+  const d = getDayData(currentUser.name, TODAY);
+  const pts = getTodayPts(currentUser.name);
+
+  document.getElementById('tr-name').textContent = currentUser.avatar + ' ' + currentUser.name;
+  document.getElementById('tr-city').textContent = '📍 ' + (currentUser.city||'London');
+  document.getElementById('tr-pts').textContent = pts;
+  document.getElementById('h-pts').textContent = pts;
+
+  // Fasting button
+  const fb = document.getElementById('fast-btn');
+  fb.className = 'fast-btn ' + (d.fasting ? 'on' : 'off');
+  fb.innerHTML = d.fasting ? '<span>✅</span><span>Fasting Today!</span>' : '<span>🌙</span><span>Mark as Fasting</span>';
+
+  // Prayers grid
+  document.getElementById('prayers-grid').innerHTML = PRAYERS.map(p => `
+    <button class="pb2${d.prayers[p]?' done':''}" onclick="togglePrayer('${p}')">
+      <div class="pe">${PEMOJI[p]}</div>
+      <div class="pk">${d.prayers[p]?'✅':'⬜'}</div>
+      <div class="pna">${p}</div>
+    </button>
+  `).join('');
+
+  // Stats
+  const pCount = PRAYERS.filter(p=>d.prayers[p]).length;
+  document.getElementById('sc-quran').textContent = d.quranPages||0;
+  document.getElementById('sc-prayers').textContent = `${pCount}/6`;
+  document.getElementById('sc-streak').textContent = getFastingStreak(currentUser.name);
+
+  // Quran personal
+  const totalPages = totalQPages(currentUser);
+  const pct = Math.min(100, (totalPages/604*100));
+  document.getElementById('q-pct').textContent = pct.toFixed(1)+'%';
+  document.getElementById('q-bar').style.width = pct+'%';
+  document.getElementById('q-pages-total').textContent = `${totalPages} / 604 pages`;
+}
+
+function toggleFast() {
+  if (!currentUser) return;
+  const d = getDayData(currentUser.name, TODAY);
+  d.fasting = !d.fasting;
+  saveDayData(currentUser.name, TODAY, d);
+  renderTracker();
+  renderFamily();
+  renderLeaderboard();
+  if (d.fasting) { showToast('🌙 Fasting marked! +100 pts'); confetti(); }
+}
+function togglePrayer(p) {
+  if (!currentUser) return;
+  const d = getDayData(currentUser.name, TODAY);
+  d.prayers[p] = !d.prayers[p];
+  saveDayData(currentUser.name, TODAY, d);
+  renderTracker();
+  renderFamily();
+  renderLeaderboard();
+  if (d.prayers[p]) showToast(`${PEMOJI[p]} ${p} done! +${p==='Fajr'?30:p==='Taraweeh'?25:20} pts`);
+}
+function addQuranPage() {
+  if (!currentUser) return;
+  const d = getDayData(currentUser.name, TODAY);
+  d.quranPages = (d.quranPages||0)+1;
+  saveDayData(currentUser.name, TODAY, d);
+  renderTracker();
+  renderFamQuran();
+  renderLeaderboard();
+  renderBadges();
+  showToast('📖 Page logged! +5 pts');
+}
+
+// ==================== DEEDS ====================
+function renderDeeds() {
+  const dl = document.getElementById('deeds-list');
+  const deeds = getDeeds();
+  if (!deeds.length) {
+    dl.innerHTML = '<div class="empty" style="padding:16px;font-size:12px;">No good deeds logged yet. Be the first! 💛</div>';
+    return;
+  }
+  // Get color for who
+  dl.innerHTML = deeds.slice(0,20).map(d => {
+    const p = S.getProfile(d.who);
+    const col = p ? p.color : '#6B7280';
+    return `<div class="di"><span class="de">${d.emoji}</span><span class="dt">${d.text}</span><span class="dw" style="color:${col}">${d.who}</span></div>`;
+  }).join('');
+}
+function addDeed() {
+  if (!currentUser) return;
+  const inp = document.getElementById('deed-inp');
+  const text = inp.value.trim();
+  if (!text) return;
+  pushDeed({who: currentUser.name, text, emoji: DEED_EMOJIS[Math.floor(Math.random()*DEED_EMOJIS.length)], ts: Date.now()});
+  inp.value = '';
+  renderDeeds();
+  renderBadges();
+  showToast('💛 Good deed logged!');
+}
+
+// ==================== FAMILY ====================
+function getFamilyMembers() {
+  if (!currentUser || !currentUser.familyCode) return [currentUser];
+  const fam = S.getFamily(currentUser.familyCode);
+  if (!fam) return [currentUser];
+  return fam.members.map(n => S.getProfile(n)).filter(Boolean);
+}
+
+function renderFamily() {
+  const members = getFamilyMembers();
+  const grid = document.getElementById('family-grid');
+
+  if (!members.length) {
+    grid.innerHTML = '<div class="empty"><div class="ei">👨‍👩‍👧‍👦</div>No family members yet. Join or create a family from your Profile.</div>';
+    return;
+  }
+
+  grid.innerHTML = members.map(m => {
+    const d = getDayData(m.name, TODAY);
+    const pts = getTodayPts(m.name);
+    const pDone = PRAYERS.filter(p=>d.prayers[p]).length;
+    const dots = PRAYERS.map(p=>`<div class="dot${d.prayers[p]?' on':''}"></div>`).join('');
+    const isSelf = m.name === currentUser?.name;
+    return `<div class="mc" style="border-left:3px solid ${m.color};">
+      <div class="mac" style="border:2px solid ${m.color}22;">${m.avatar}</div>
+      <div class="mi">
+        <div class="mn">${m.name}${isSelf?' (you)':''}</div>
+        <div class="ms">
+          <span class="mst">${d.fasting?'🌙 Fasting':''}</span>
+          <span class="mst">📖 <span>${d.quranPages||0}</span>pg</span>
+          <span class="mst">🙏 <span>${pDone}/6</span></span>
+        </div>
+        <div class="pdots">${dots}</div>
+      </div>
+      <div class="mpts" style="color:${m.color}">${pts}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderLeaderboard() {
+  const members = getFamilyMembers();
+  const ranked = members.map(m => ({...m, pts: getTodayPts(m.name)})).sort((a,b)=>b.pts-a.pts);
+  const max = ranked[0]?.pts || 1;
+  const medals = ['🥇','🥈','🥉'];
+
+  document.getElementById('leaderboard').innerHTML = ranked.map((m,i) => `
+    <div class="lr">
+      <div class="lrk">${medals[i]||i+1}</div>
+      <div class="lrav">${m.avatar}</div>
+      <div class="lrnm">${m.name}${m.name===currentUser?.name?' ★':''}</div>
+      <div class="lrbw"><div class="lrb" style="width:${max?m.pts/max*100:0}%;background:${m.color};"></div></div>
+      <div class="lrpt" style="color:${m.color}">${m.pts}</div>
+    </div>
+  `).join('');
+}
+
+function renderFamQuran() {
+  const members = getFamilyMembers();
+  const TOTAL = 604;
+  let combined = 0;
+  members.forEach(m => { combined += totalQPages(m); });
+  const pct = Math.min(100, combined/TOTAL*100);
+  document.getElementById('fq-pct').textContent = pct.toFixed(1)+'%';
+  document.getElementById('fq-bar').style.width = pct+'%';
+  document.getElementById('fam-quran-rows').innerHTML = members.map(m => {
+    const pages = totalQPages(m);
+    const p = Math.min(100, pages/30*100);
+    return `<div class="qrow">
+      <div class="qn">${m.avatar} ${m.name}</div>
+      <div class="qb"><div class="qbf" style="width:${p}%;background:${m.color};"></div></div>
+      <div class="qpg">${pages}pg</div>
+    </div>`;
+  }).join('');
+}
+
+// ==================== BADGES ====================
+function renderBadges() {
+  if (!currentUser) return;
+  document.getElementById('badges').innerHTML = BADGES_DEF.map(b => {
+    const earned = b.c(currentUser);
+    return `<div class="bi${earned?' earned':' locked'}">
+      <div class="bic">${b.i}</div>
+      <div class="bin">${b.n}</div>
+      <div class="bir">${earned?'✅ Earned!':b.r}</div>
+    </div>`;
+  }).join('');
+}
+
+// ==================== LAST 10 NIGHTS ====================
+function checkLastTenNights() {
+  const now = new Date();
+  const day = Math.floor((now - RAMADAN_START) / 86400000) + 1;
+  if (day >= 20) {
+    document.getElementById('last10').style.display = 'block';
+    renderNights(day);
+  }
+}
+function renderNights(day) {
+  const nights = [21,22,23,24,25,26,27,28,29,30];
+  document.getElementById('nights-grid').innerHTML = nights.map(n => {
+    const isOdd = n%2!==0;
+    const isCur = day===n;
+    const sfx = n===21?'st':n===22?'nd':n===23?'rd':'th';
+    return `<div class="ni${isOdd?' qadr':''}${isCur?' cur':''}">
+      <div style="font-size:14px;">${isOdd?'✨':'🌙'}</div>
+      <div class="nnm">${n}${sfx}</div>
+      <div class="nlb">${isOdd?'Odd ⭐':'Even'}</div>
+    </div>`;
+  }).join('');
+}
+
+// ==================== HADITH ====================
+function setHadith() {
+  const h = HADITHS[new Date().getDate() % HADITHS.length];
+  document.getElementById('had-txt').textContent = h.t;
+  document.getElementById('had-src').textContent = '— ' + h.s;
+}
+
+// ==================== PROFILE ====================
+function renderProfile() {
+  if (!currentUser) return;
+  document.getElementById('prof-av').textContent = currentUser.avatar;
+  document.getElementById('prof-nm').textContent = currentUser.name;
+  document.getElementById('prof-sub').textContent = `📍 ${currentUser.city||'London'} · ${currentUser.familyCode||'No family'}`;
+  document.getElementById('prof-pts').textContent = getAllTimePts(currentUser.name) + ' total pts';
+
+  // User list
+  const users = S.getUsers();
+  document.getElementById('user-list').innerHTML = users.map(n => {
+    const p = S.getProfile(n);
+    if (!p) return '';
+    const pts = getAllTimePts(n);
+    const isActive = n === currentUser.name;
+    return `<div class="uit${isActive?' on':''}" onclick="switchUser('${n}')">
+      <div class="uiav">${p.avatar}</div>
+      <div class="uinm">${p.name}${isActive?' ✓':''}</div>
+      <div class="uipts">${pts} pts</div>
+    </div>`;
+  }).join('');
+
+  // Family management
+  renderFamMgmt();
+}
+
+function renderFamMgmt() {
+  if (!currentUser) return;
+  const fc = document.getElementById('fam-content');
+  if (!currentUser.familyCode) {
+    fc.innerHTML = `
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Track your Ramadan journey together. Create or join a family to see everyone's progress.</div>
+      <div class="fam-btns">
+        <button class="fam-btn fam-btn-gold" onclick="openFamModal('create')">Create Family</button>
+        <button class="fam-btn fam-btn-out" onclick="openFamModal('join')">Join Family</button>
+      </div>`;
+    return;
+  }
+  const fam = S.getFamily(currentUser.familyCode);
+  const members = fam ? fam.members.map(n=>S.getProfile(n)).filter(Boolean) : [currentUser];
+  fc.innerHTML = `
+    <div style="font-size:11px;color:var(--muted);margin-bottom:4px;letter-spacing:1px;">FAMILY CODE</div>
+    <div class="fam-code">${currentUser.familyCode}</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Share this code so family members can join</div>
+    <div class="fam-mbrs">
+      ${members.map(m=>`
+        <div class="fmb">
+          <div class="fmbav">${m.avatar}</div>
+          <div class="fmbnm">${m.name}</div>
+          ${fam?.creator===m.name ? '<span class="creator-badge">CREATOR</span>' : ''}
+          ${currentUser.isCreator && m.name !== currentUser.name ? `<button class="rm-btn" onclick="removeFamMember('${m.name}')" title="Remove">✕</button>` : ''}
+        </div>`).join('')}
+    </div>
+    <button class="fam-btn fam-btn-out" style="width:100%;margin-top:12px;" onclick="leaveFamily()">Leave Family</button>`;
+}
+
+// ==================== DHIKR ====================
+let dhikrType = 'subhan';
+let dhikrAllIdx = 0;
+const DHIKR_DATA = {
+  subhan:{ar:'سُبْحَانَ ٱللَّٰه',en:'SubhanAllah'},
+  hamd:{ar:'ٱلْحَمْدُ لِلَّٰه',en:'Alhamdulillah'},
+  akbar:{ar:'ٱللَّٰه أَكْبَر',en:'Allahu Akbar'},
+};
+const DHIKR_CYCLE = ['subhan','hamd','akbar'];
+
+function setDhikr(type, btn) {
+  dhikrType = type;
+  dhikrAllIdx = 0;
+  document.querySelectorAll('.dht').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  if (type !== 'all') {
+    document.getElementById('tap-ar').textContent = DHIKR_DATA[type].ar;
+    document.getElementById('tap-en').textContent = DHIKR_DATA[type].en;
+  } else {
+    updateDhikrCycleDisplay();
+  }
+}
+function updateDhikrCycleDisplay() {
+  const cur = DHIKR_CYCLE[dhikrAllIdx % 3];
+  document.getElementById('tap-ar').textContent = DHIKR_DATA[cur].ar;
+  document.getElementById('tap-en').textContent = DHIKR_DATA[cur].en;
+}
+function tap(e) {
+  if (!currentUser) return;
+  let d = getDhikr(currentUser.name);
+  let type = dhikrType;
+  if (dhikrType === 'all') {
+    type = DHIKR_CYCLE[dhikrAllIdx % 3];
+    if (d[type] < 33) { d[type]++; if(d[type]>=33) dhikrAllIdx++; }
+    else dhikrAllIdx++;
+    updateDhikrCycleDisplay();
+  } else {
+    d[type] = (d[type]||0)+1;
+  }
+  saveDhikr(currentUser.name, d);
+  updateDhikrDisplay(d);
+  // Ripple
+  const rect = e.currentTarget.getBoundingClientRect();
+  const r = document.createElement('div');
+  r.className = 'ripple';
+  r.style.cssText = `left:${e.clientX-rect.left-30}px;top:${e.clientY-rect.top-30}px;`;
+  e.currentTarget.appendChild(r);
+  setTimeout(()=>r.remove(), 600);
+  // Check complete
+  const tot = d.subhan+d.hamd+d.akbar;
+  if (tot === 99) {
+    document.getElementById('dh-comp').style.display = 'block';
+    confetti();
+    showToast('🌟 99 Dhikr Complete! MashaAllah!');
+    renderBadges();
+  }
+}
+function updateDhikrDisplay(d) {
+  d = d || (currentUser ? getDhikr(currentUser.name) : {subhan:0,hamd:0,akbar:0});
+  document.getElementById('dc-s').textContent = d.subhan||0;
+  document.getElementById('dc-h').textContent = d.hamd||0;
+  document.getElementById('dc-a').textContent = d.akbar||0;
+  const tot = (d.subhan||0)+(d.hamd||0)+(d.akbar||0);
+  document.getElementById('dh-tot').textContent = tot;
+  ['dc-s','dc-h','dc-a'].forEach((id,i)=>{
+    const key = ['subhan','hamd','akbar'][i];
+    document.getElementById(id).className = 'dhcn' + ((d[key]||0)>=33?' done':'');
+  });
+}
+function resetDhikr() {
+  if (!currentUser) return;
+  saveDhikr(currentUser.name, {subhan:0,hamd:0,akbar:0});
+  dhikrAllIdx = 0;
+  updateDhikrDisplay({subhan:0,hamd:0,akbar:0});
+  document.getElementById('dh-comp').style.display = 'none';
+}
+
+// ==================== QUIZ ====================
+let qz = {q:0, score:0, answered:false, questions:[], timer:null, tl:15};
+function startQuiz() {
+  qz.questions = [...QUIZZES].sort(()=>Math.random()-0.5).slice(0,8);
+  qz.q = 0; qz.score = 0;
+  renderQuizQ();
+}
+function renderQuizQ() {
+  const cont = document.getElementById('quiz-cont');
+  if (qz.q >= qz.questions.length) {
+    const pct = Math.round(qz.score/qz.questions.length*100);
+    const msg = pct===100?'🌟 Perfect! MashaAllah!':pct>=75?'Great job! 💛':pct>=50?'Good effort! Keep learning! 📖':'Keep reading the Quran! 🤲';
+    cont.innerHTML = `<div class="qzres">
+      <div class="qzrsc">${qz.score}/${qz.questions.length}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">${pct}% correct</div>
+      <div class="qzrmsg">${msg}</div>
+      <button class="qzrst" onclick="startQuiz()">↺ Play Again</button>
+    </div>`;
+    if (pct>=75) confetti();
+    return;
+  }
+  const q = qz.questions[qz.q];
+  qz.answered = false; qz.tl = 15;
+  cont.innerHTML = `
+    <div class="qzh">
+      <div class="qzpg">Question ${qz.q+1}/${qz.questions.length}</div>
+      <div class="qzsc">⭐ ${qz.score} pts</div>
+    </div>
+    <div class="qztb"><div class="qztf" id="qtf" style="width:100%"></div></div>
+    <div class="qzq">${q.q}</div>
+    <div class="qzo">
+      ${q.o.map((o,i)=>`<button class="qzopt" id="qo${i}" onclick="answerQ(${i})">${o}</button>`).join('')}
+    </div>
+    <div class="qzfb" id="qzfb"></div>
+    <button class="qznxt" onclick="nextQ()" id="qznxt" style="display:none">Next →</button>`;
+  clearInterval(qz.timer);
+  qz.timer = setInterval(()=>{
+    qz.tl--;
+    const tf = document.getElementById('qtf');
+    if (tf) tf.style.width = (qz.tl/15*100)+'%';
+    if (qz.tl <= 0) { clearInterval(qz.timer); if(!qz.answered) answerQ(-1); }
+  }, 1000);
+}
+function answerQ(chosen) {
+  if (qz.answered) return;
+  qz.answered = true;
+  clearInterval(qz.timer);
+  const q = qz.questions[qz.q];
+  document.querySelectorAll('.qzopt').forEach((b,i)=>{
+    b.disabled = true;
+    if(i===q.a) b.classList.add('ok');
+    else if(i===chosen) b.classList.add('ng');
+  });
+  const fb = document.getElementById('qzfb');
+  if (chosen===q.a) { qz.score++; fb.textContent='✅ Correct! '+q.e; fb.style.color='var(--green)'; }
+  else if (chosen===-1) { fb.textContent='⏱ Time up! '+q.e; fb.style.color='var(--amber)'; }
+  else { fb.textContent='❌ '+q.e; fb.style.color='var(--red)'; }
+  const nxt = document.getElementById('qznxt');
+  if (nxt) nxt.style.display = 'block';
+}
+function nextQ() { qz.q++; renderQuizQ(); }
+
+// ==================== BINGO ====================
+function renderBingo() {
+  const name = currentUser?.name;
+  const done = name ? getBingo(name) : [];
+  document.getElementById('bingo-grid').innerHTML = BINGO_DEEDS.map((d,i)=>`
+    <div class="bc${done.includes(i)?' done':''}" onclick="toggleBingo(${i})">
+      <div class="bci">${d.i}</div>
+      <div class="bct">${d.t}</div>
+    </div>`).join('');
+  const cnt = done.length;
+  document.getElementById('bingo-cnt').textContent = cnt;
+  const win = document.getElementById('bingo-win');
+  if (cnt >= 8) { win.style.display='block'; if(cnt===8) confetti(); }
+  else win.style.display='none';
+}
+function toggleBingo(i) {
+  if (!currentUser) return;
+  let done = getBingo(currentUser.name);
+  if (done.includes(i)) done = done.filter(x=>x!==i);
+  else { done.push(i); showToast('✅ Good deed done! MashaAllah!'); }
+  saveBingo(currentUser.name, done);
+  renderBingo();
+}
+
+// ==================== GAMES TAB ====================
+function switchGame(game, btn) {
+  document.querySelectorAll('.gp').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.gtab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('gp-'+game).classList.add('on');
+  btn.classList.add('on');
+  if (game==='dhikr' && currentUser) updateDhikrDisplay();
+  if (game==='bingo') renderBingo();
+}
+
+// ==================== TABS ====================
+function showTab(tab) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+tab).classList.add('on');
+  document.getElementById('nav-'+tab).classList.add('on');
+  document.getElementById('content').scrollTop = 0;
+  if (tab==='family') { renderFamily(); renderLeaderboard(); renderFamQuran(); }
+  if (tab==='profile') renderProfile();
+  if (tab==='games' && currentUser) updateDhikrDisplay();
+}
+
+// ==================== CONFETTI ====================
+function confetti() {
+  const colors=['#F5C518','#00D4AA','#FF6B9D','#6BCB77','#3498DB','#fff'];
+  const wrap = document.createElement('div');
+  wrap.className = 'cfwrap';
+  document.body.appendChild(wrap);
+  for(let i=0;i<50;i++){
+    const p = document.createElement('div');
+    p.className = 'cf';
+    p.style.cssText=`left:${Math.random()*100}%;top:-10px;background:${colors[~~(Math.random()*colors.length)]};animation-delay:${Math.random()*0.8}s;animation-duration:${2+Math.random()*2}s;transform:rotate(${Math.random()*360}deg);width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;`;
+    wrap.appendChild(p);
+  }
+  setTimeout(()=>wrap.remove(),4000);
+}
+
+// ==================== TOAST ====================
+let toastTimer;
+function showToast(msg) {
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.remove(),3000);
+}
+
+// ==================== KEYBOARD ====================
+document.addEventListener('keydown', e => {
+  if(e.key==='Enter') {
+    const di = document.getElementById('deed-inp');
+    if(document.activeElement===di) addDeed();
+  }
+});
+
+// ==================== LAUNCH ====================
+window.addEventListener('load', init);
+</script>
+</body>
+</html>
