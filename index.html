@@ -14,7 +14,7 @@
   --red:#FF4560;--green:#00D97E;--amber:#FFB800;
   --text:#E8EAF0;--muted:#6B7280;--dim:#374151;
   --r:14px;--font:'Inter',sans-serif;
-  --nh:56px;--hh:72px;--pb:40px;--nav:64px;
+  --nh:56px;--hh:72px;--pb:62px;--nav:64px;
 }
 html,body{height:100%;overflow:hidden;}
 body{background:var(--bg);color:var(--text);font-family:var(--font);display:flex;flex-direction:column;}
@@ -64,13 +64,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);display:flex
 .hs{font-size:8px;color:var(--muted);margin-top:1px;}
 
 /* === PRAYER BAR === */
-.pbar{display:flex;justify-content:space-around;background:rgba(5,8,16,0.95);border-bottom:1px solid rgba(255,255,255,0.04);padding:7px 12px;position:fixed;top:calc(var(--nh) + var(--hh));left:0;right:0;z-index:98;}
-.pi{text-align:center;}
-.pn{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px;}
-.pt{font-size:12px;font-weight:700;color:var(--text);}
+.pbar{display:flex;justify-content:space-around;align-items:center;background:rgba(5,8,16,0.97);border-bottom:1px solid rgba(255,255,255,0.06);padding:10px 16px;position:fixed;top:calc(var(--nh) + var(--hh));left:0;right:0;z-index:98;}
+.pi{text-align:center;padding:0 4px;}
+.pn{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;}
+.pt{font-size:13px;font-weight:700;color:var(--text);}
 .pi.past .pt{color:var(--dim);text-decoration:line-through;}
 .pi.nxt .pn,.pi.nxt .pt{color:var(--gold);}
-.pnxt{font-size:7px;color:var(--gold);letter-spacing:1px;font-weight:700;}
+.pnxt{font-size:8px;color:var(--gold);letter-spacing:1px;font-weight:700;margin-top:2px;}
 
 /* === CONTENT === */
 .content{margin-top:calc(var(--nh) + var(--hh) + var(--pb));margin-bottom:var(--nav);overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;}
@@ -625,8 +625,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);display:flex
 
 <script>
 // ==================== CONSTANTS ====================
-const RAMADAN_START = new Date('2026-03-01');
-const EID_DATE = new Date('2026-03-31');
+// Live Hijri — updated from Aladhan API on load
+let liveRamadanDay = null;
+let liveDaysToEid = null;
 const TODAY = new Date().toISOString().slice(0,10);
 const PRAYERS = ['Fajr','Dhuhr','Asr','Maghrib','Isha','Taraweeh'];
 const PEMOJI = {Fajr:'🌅',Dhuhr:'☀️',Asr:'🌤',Maghrib:'🌇',Isha:'🌙',Taraweeh:'🕌'};
@@ -982,6 +983,23 @@ async function fetchPrayerTimes(city) {
     if (json.code === 200) {
       const t = json.data.timings;
       prayerTimes = {Fajr:t.Fajr,Dhuhr:t.Dhuhr,Asr:t.Asr,Maghrib:t.Maghrib,Isha:t.Isha};
+      // Extract live Hijri date for accurate Ramadan day
+      const hijri = json.data.date?.hijri;
+      if (hijri) {
+        const hMonth = parseInt(hijri.month.number);
+        const hDay = parseInt(hijri.day);
+        if (hMonth === 9) { // Ramadan
+          liveRamadanDay = hDay;
+          liveDaysToEid = 30 - hDay + 1;
+        } else if (hMonth === 10) { // Shawwal — Eid!
+          liveRamadanDay = 30;
+          liveDaysToEid = 0;
+        } else if (hMonth === 8) { // Sha'ban — before Ramadan
+          liveRamadanDay = null;
+          liveDaysToEid = null;
+        }
+        updateHero();
+      }
     }
   } catch(e) {}
 }
@@ -1016,15 +1034,13 @@ function updateClock() {
   updateHero();
 }
 function updateHero() {
-  // Ramadan day
-  const now = new Date();
-  const diff = Math.floor((now - RAMADAN_START) / 86400000) + 1;
-  const day = Math.max(1, Math.min(30, diff));
+  // Ramadan day — use live Hijri if available
+  const day = liveRamadanDay || '--';
   document.getElementById('h-day').textContent = day;
 
   // Eid countdown
-  const eidDiff = Math.ceil((EID_DATE - now) / 86400000);
-  document.getElementById('h-eid').textContent = eidDiff > 0 ? eidDiff + 'd' : '🎉';
+  const eidText = liveDaysToEid === 0 ? '🎉 Eid!' : liveDaysToEid ? liveDaysToEid + 'd' : '--';
+  document.getElementById('h-eid').textContent = eidText;
 
   // Iftar/Suhoor countdown
   const toMin = t => { const [h,m]=(t||'00:00').split(':').map(Number);return h*60+m; };
@@ -1243,8 +1259,7 @@ function renderBadges() {
 
 // ==================== LAST 10 NIGHTS ====================
 function checkLastTenNights() {
-  const now = new Date();
-  const day = Math.floor((now - RAMADAN_START) / 86400000) + 1;
+  const day = liveRamadanDay || 0;
   if (day >= 20) {
     document.getElementById('last10').style.display = 'block';
     renderNights(day);
@@ -1507,6 +1522,13 @@ function showTab(tab) {
   document.getElementById('tab-'+tab).classList.add('on');
   document.getElementById('nav-'+tab).classList.add('on');
   document.getElementById('content').scrollTop = 0;
+  // Hide prayer bar on Games/Profile — more room, no overlap
+  const showPbar = tab === 'day' || tab === 'family';
+  const pbar = document.getElementById('pbar');
+  pbar.style.display = showPbar ? 'flex' : 'none';
+  document.querySelector('.content').style.marginTop = showPbar
+    ? 'calc(var(--nh) + var(--hh) + var(--pb))'
+    : 'calc(var(--nh) + var(--hh))';
   if (tab==='family') { renderFamily(); renderLeaderboard(); renderFamQuran(); }
   if (tab==='profile') renderProfile();
   if (tab==='games' && currentUser) updateDhikrDisplay();
