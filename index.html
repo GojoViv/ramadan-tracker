@@ -14,7 +14,7 @@
   --red:#FF4560;--green:#00D97E;--amber:#FFB800;
   --text:#E8EAF0;--muted:#6B7280;--dim:#374151;
   --r:14px;--font:'Inter',sans-serif;
-  --nh:56px;--hh:72px;--pb:62px;--nav:64px;
+  --nh:56px;--hh:72px;--pb:50px;--nav:64px;
 }
 html,body{height:100%;overflow:hidden;}
 body{background:var(--bg);color:var(--text);font-family:var(--font);display:flex;flex-direction:column;}
@@ -64,13 +64,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);display:flex
 .hs{font-size:8px;color:var(--muted);margin-top:1px;}
 
 /* === PRAYER BAR === */
-.pbar{display:flex;justify-content:space-around;align-items:center;background:rgba(5,8,16,0.97);border-bottom:1px solid rgba(255,255,255,0.06);padding:10px 16px;position:fixed;top:calc(var(--nh) + var(--hh));left:0;right:0;z-index:98;}
-.pi{text-align:center;padding:0 4px;}
-.pn{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;}
+.pbar{display:flex;justify-content:space-around;align-items:center;background:rgba(5,8,16,0.97);border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 12px;position:fixed;top:calc(var(--nh) + var(--hh));left:0;right:0;z-index:98;}
+.pi{text-align:center;padding:0 2px;}
+.pn{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;}
 .pt{font-size:13px;font-weight:700;color:var(--text);}
 .pi.past .pt{color:var(--dim);text-decoration:line-through;}
 .pi.nxt .pn,.pi.nxt .pt{color:var(--gold);}
-.pnxt{font-size:8px;color:var(--gold);letter-spacing:1px;font-weight:700;margin-top:2px;}
+
 
 /* === CONTENT === */
 .content{margin-top:calc(var(--nh) + var(--hh) + var(--pb));margin-bottom:var(--nav);overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;}
@@ -1020,9 +1020,8 @@ function renderPrayerBar() {
     const past = toMin(e.t) < nowMin;
     const nxt = i === nextIdx;
     return `<div class="pi${past?' past':''}${nxt?' nxt':''}">
-      <div class="pn">${e.e} ${e.n}</div>
-      <div class="pt">${e.t}</div>
-      ${nxt ? '<div class="pnxt">NEXT</div>' : ''}
+      <div class="pn">${e.n}</div>
+      <div class="pt">${e.t}${nxt?' ▲':''}</div>
     </div>`;
   }).join('');
 }
